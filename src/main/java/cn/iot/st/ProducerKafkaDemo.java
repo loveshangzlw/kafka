@@ -28,7 +28,7 @@ public class ProducerKafkaDemo {
     }
 
     public static void main(String[] args) throws Exception {
-        producerSendCallback();
+        sendMessageCustomPartition();
     }
 
     /**
@@ -51,7 +51,7 @@ public class ProducerKafkaDemo {
         Producer<String, String> producer = new KafkaProducer<>(properties);
         for (int i = 0; i < 10; i++) {
             String key = "key" + i ;
-            ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME,"key" + i,"value" + i);
+            ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC_NAME,key,"value" + i);
             producer.send(record, new Callback() {
                 @Override
                 public void onCompletion(RecordMetadata metadata, Exception exception) {
@@ -60,6 +60,32 @@ public class ProducerKafkaDemo {
             });
         }
         producer.close();
+    }
 
+
+    public static void sendMessageCustomPartition(){
+        Properties p = new Properties();
+        p.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"192.168.200.146:9092");
+        p.setProperty(ProducerConfig.ACKS_CONFIG,"all");
+        p.setProperty(ProducerConfig.RETRIES_CONFIG,"0");
+        p.setProperty(ProducerConfig.BATCH_SIZE_CONFIG,"65536");
+        p.setProperty(ProducerConfig.LINGER_MS_CONFIG,"1");
+        p.setProperty(ProducerConfig.BUFFER_MEMORY_CONFIG,"10485760");
+        p.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+        p.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
+        p.put(ProducerConfig.PARTITIONER_CLASS_CONFIG,"cn.iot.st.PartitionCustom");
+        KafkaProducer<String, String> kafkaProducer = new KafkaProducer<String, String>(p);
+        for (int i = 0; i < 5; i++) {
+            String key = "key" + i;
+            ProducerRecord<String, String> record = new ProducerRecord<String, String>(TOPIC_NAME,key);
+            kafkaProducer.send(record, new Callback() {
+                @Override
+                public void onCompletion(RecordMetadata metadata, Exception exception) {
+                    System.out.println(key + " --- partition = " + metadata.partition() + " , offset = " + metadata.offset());
+                }
+            });
+        }
+        kafkaProducer.close();
     }
 }
+
