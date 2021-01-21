@@ -14,6 +14,7 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       # 发生错误后，消息重发的次数。
       retries: 0
+      acks: all
     consumer:
       # 消费者组的名字
       group-id: springkafka
@@ -21,7 +22,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       # 自动提交的时间间隔 在spring boot 2.X 版本中这里采用的是值的类型为Duration 需要符合特定的格式，如1S,1M,2H,5D
-      auto-commit-interval: 2S
+      auto-commit-interval: 1S
       # 是否自动提交偏移量，默认值是true,为了避免出现重复数据和数据丢失，可以把它设置为false,然后手动提交偏移量
       enable-auto-commit: false
       # earliest ：在偏移量无效的情况下，消费者将从起始位置读取分区的记录
